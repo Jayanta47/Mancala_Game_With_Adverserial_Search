@@ -22,11 +22,11 @@ public class GameState {
         this.parent = s;
     }
 
-    boolean isFreeTurn() {
+    public boolean isFreeTurn() {
         return this.allowFT;
     }
 
-    int getP1RowSum() {
+    public int getP1RowSum() {
         int sum = 0;
         for (int i = 0; i < 6; i++) {
             sum += this.boardSpaces[i];
@@ -35,7 +35,7 @@ public class GameState {
         return sum;
     }
 
-    int getP1RowSum(int[] boardSpaces) {
+    public int getP1RowSum(int[] boardSpaces) {
         int sum = 0;
         for (int i = 0; i < 6; i++) {
             sum += boardSpaces[i];
@@ -44,7 +44,7 @@ public class GameState {
         return sum;
     }
 
-    int getP2RowSum() {
+    public int getP2RowSum() {
         int sum = 0;
         for (int i = 7; i < 13; i++) {
             sum += this.boardSpaces[i];
@@ -53,7 +53,7 @@ public class GameState {
         return sum;
     }
 
-    int getP2RowSum(int[] boardSpaces) {
+    public int getP2RowSum(int[] boardSpaces) {
         int sum = 0;
         for (int i = 7; i < 13; i++) {
             sum += boardSpaces[i];
@@ -61,6 +61,10 @@ public class GameState {
 
         return sum;
     }
+
+    public int getP1Score() {return this.boardSpaces[6];}
+
+    public int getP2Score() {return this.boardSpaces[13];}
 
     public GameState nextState(int n_box, boolean isP1Turn) {
         int idx, forbiddenBox, playerBox, lowerBound, upperBound;
@@ -140,17 +144,26 @@ public class GameState {
 
     }
 
-    boolean isEndState() {
+    public boolean isEndState() {
         return this.getP1RowSum() == 0 && this.getP2RowSum() == 0 ||
                 Math.abs(this.boardSpaces[6] - this.boardSpaces[13]) > 24;
+    }
+
+    int [] getBoardSpaces() {
+        return this.boardSpaces;
+    }
+
+    public int getValOfBox(int pos, boolean isP1) { // pos --> 1-6
+        if (isP1) {
+            return this.boardSpaces[pos-1];
+        }
+        else
+            return this.boardSpaces[pos+6];
     }
 
     @Override
     public String toString() {
         StringBuilder board = new StringBuilder();
-//        board.append("Current Turn: ");
-//        if ((this.current_turn+1)%2==0) board.append("P1").append("\n");
-//        else board.append("P2").append("\n");
         board.append("Mancala Board: \n");
         board.append("P2: ").append(this.boardSpaces[13]).append("\n");
         board.append("-------------------------------------\n");

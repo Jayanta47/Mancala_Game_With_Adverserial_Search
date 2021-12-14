@@ -8,7 +8,7 @@ public class MancalaBoard {
     private GameState currentState;
 //    private final int player_1_box = 6;
 //    private final int player_2_box = 13;
-    private int current_turn = 0; // 0 for player 1, 1 for player 2
+    public int current_turn = 0; // 0 for player 1, 1 for player 2
     private boolean isEndOfGame = false;
     private LinkedList<Integer> boxSelected;
 
@@ -50,6 +50,20 @@ public class MancalaBoard {
     public String toString() {
         return this.currentState.toString();
     }
+
+    public GameState getStateCopy() {
+        int[] newBoard = this.currentState.boardSpaces;
+        return new GameState(newBoard);
+    }
+
+    public boolean allowFreeMove() {
+        return this.currentState.isFreeTurn();
+    }
+
+    public boolean isEndOfGame() {
+        return this.currentState.isEndState();
+    }
+
 //    @Override
 //    public String toString() {
 //        StringBuilder board = new StringBuilder();
