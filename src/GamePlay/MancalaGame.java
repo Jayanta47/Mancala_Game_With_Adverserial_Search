@@ -1,6 +1,5 @@
 package GamePlay;
 
-import org.newdawn.slick.* ;
 
 
 public class MancalaGame {

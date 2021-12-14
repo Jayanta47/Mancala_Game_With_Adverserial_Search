@@ -4,25 +4,31 @@ import GameBoard.GameState;
 import GameBoard.MancalaBoard;
 import Heuristics.IHeuristic;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Player {
     IHeuristic hn;
     int playerNo;
     MancalaBoard mb;
-    private final int MaxDepth = 3;
+    private final int MaxDepth = 4;
     int[] returnVal;
-    boolean testmode=false;
+    boolean testMode=false;
+    ArrayList<ArrayList<String>> record;
 
     public Player(IHeuristic hn, int playerNo, MancalaBoard mb) {
         this.hn = hn;
         this.playerNo = playerNo;
         this.mb = mb;
         returnVal = new int[7];
+        record = new ArrayList<>();
+        for(int i=0;i<MaxDepth;i++) {
+            record.add(new ArrayList<>());
+        }
     }
 
     public void turnOnTestMode() {
-        this.testmode = true;
+        this.testMode = true;
     }
 
     public void makeMove() {
@@ -40,10 +46,14 @@ public class Player {
         }
 
         int resultV= MaxValue(s, Integer.MIN_VALUE, Integer.MAX_VALUE, MaxDepth, this.playerNo-1);
-        if(testmode) System.out.println(Arrays.toString(this.returnVal));
-        for(int i=1;i<=6;i++) {
-            if (this.returnVal[i]==resultV) return i;
+        if(testMode) System.out.println(Arrays.toString(this.returnVal));
+        if (testMode) {
+            System.out.println("result="+resultV);
         }
+        for(int i=6;i>=1;i--) {
+            if (this.returnVal[i]==resultV && s.getValOfBox(i, this.playerNo==1)>0) return i;
+        }
+
         return -1;
     }
 
@@ -51,7 +61,7 @@ public class Player {
 
     private int MaxValue(GameState s, int alpha, int beta, int depth, int turn_player) {
 
-//        if(testmode) {
+//        if(testMode) {
 //            System.out.println("Entered Maxval");
 //        }
         if (depth == 0 || s.isEndState()) {
@@ -60,20 +70,22 @@ public class Player {
 
         int v = Integer.MIN_VALUE;
 
-        for (int i=1;i<=6;i++) {
+        for (int i=6;i>=1;i--) {
             if (s.getValOfBox(i, (turn_player==0)) > 0) {
                 GameState nxtState = s.nextState(i, (turn_player==0));
                 if (nxtState.isFreeTurn()){
-                    if (testmode) {
+                    if (testMode) {
                         System.out.printf("Entering Max Value Mode, depth %d -> %d, i = %d\n", depth,depth-1,  i);
                         System.out.println(nxtState);
+                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
                     }
                     v=Math.max(v, MaxValue(nxtState, alpha, beta, depth-1, turn_player));
                 }
                 else {
-                    if (testmode) {
+                    if (testMode) {
                         System.out.printf("Entering Min Value Mode, depth %d -> %d, i = %d\n", depth,depth-1,  i);
                         System.out.println(nxtState);
+                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
                     }
                     v = Math.max(v, MinValue(nxtState, alpha, beta, depth-1, (turn_player+1)%2));
                 }
@@ -82,20 +94,22 @@ public class Player {
                     returnVal[i] = v;
                 }
                 if (v>=beta) {
+                    if (depth==MaxDepth-1 && testMode) System.out.println("returning "+v);
                     return v;
                 }
                 alpha = Math.max(alpha, v);
             }
             else if (depth==MaxDepth){
-                returnVal[i]=-1;
+                returnVal[i]=Integer.MIN_VALUE;
             }
         }
+        if (depth==MaxDepth && testMode) System.out.println("returning "+v);
         return v;
     }
 
     private int MinValue(GameState s, int alpha, int beta, int depth, int turn_player) {
 
-//        if(testmode) {
+//        if(testMode) {
 //            System.out.println("Entered Minval");
 //        }
 
@@ -105,30 +119,34 @@ public class Player {
 
         int v = Integer.MAX_VALUE;
 
-        for (int i=1;i<=6;i++) {
+        for (int i=6;i>=1;i--) {
             if (s.getValOfBox(i, (turn_player==0)) > 0) {
                 GameState nxtState = s.nextState(i, (turn_player==0));
                 if (nxtState.isFreeTurn()) {
-                    if (testmode) {
+                    if (testMode) {
                         System.out.printf("Entering min value mode, depth %d -> %d, i= %d\n", depth,depth-1, i);
                         System.out.println(nxtState);
+                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
                     }
                     v = Math.min(v, MinValue(nxtState, alpha, beta, depth-1, turn_player));
                 }
                 else {
-                    if (testmode) {
+                    if (testMode) {
                         System.out.printf("Entering max Value Mode, depth %d -> %d, i = %d\n", depth,depth-1, i);
                         System.out.println(nxtState);
+                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
                     }
 
                     v = Math.min(v, MaxValue(nxtState, alpha, beta, depth-1, (turn_player+1)%2));
                 }
                 if (v<=alpha) {
+                    if (testMode) System.out.println("returning "+v);
                     return v;
                 }
                 beta = Math.min(beta, v);
             }
         }
+        if (testMode) System.out.println("returning "+v);
         return v;
     }
 }
