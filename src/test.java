@@ -4,6 +4,8 @@ import Heuristics.Heuristic2;
 import Heuristics.Heuristic3;
 import Player.Player;
 
+import java.util.Scanner;
+
 public class test {
     public static void BoardCheck() {
         MancalaBoard mb = new MancalaBoard();
@@ -95,7 +97,7 @@ public class test {
     public static void AB_search_test() {
         MancalaBoard mb = new MancalaBoard();
         System.out.println(mb);
-        Player P1 = new Player(new Heuristic3(), 1, mb);
+        Player P1 = new Player(new Heuristic2(), 1, mb);
         Player P2 = new Player(new Heuristic1(), 2, mb);
         while(!mb.isEndOfGame()) {
             if (mb.current_turn%2==0) {
@@ -105,6 +107,23 @@ public class test {
                 P2.makeMove();
             }
 
+            System.out.println(mb);
+        }
+    }
+
+    public static void singlePlayerTest() {
+        MancalaBoard mb = new MancalaBoard();
+        System.out.println(mb);
+        Player P1 = new Player(new Heuristic1(), 1, mb);
+        Scanner scn = new Scanner(System.in);
+        while(!mb.isEndOfGame()) {
+            if (mb.current_turn%2==1) {
+                P1.makeMove();
+            }
+            else {
+                int move = scn.nextInt();
+                mb.clickSquare(move);
+            }
             System.out.println(mb);
         }
     }
@@ -119,7 +138,8 @@ public class test {
 
     public static void main(String[] args) {
 //        BoardCheck();
-//        AB_search_test();
-        Player_test();
+        AB_search_test();
+//        Player_test();
+//        singlePlayerTest();
     }
 }

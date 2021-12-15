@@ -11,7 +11,7 @@ public class Player {
     IHeuristic hn;
     int playerNo;
     MancalaBoard mb;
-    private final int MaxDepth = 4;
+    private final int MaxDepth = 15;
     int[] returnVal;
     boolean testMode=false;
     ArrayList<ArrayList<String>> record;
