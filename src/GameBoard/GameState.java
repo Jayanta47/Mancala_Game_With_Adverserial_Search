@@ -161,6 +161,7 @@ public class GameState {
             return this.boardSpaces[pos+6];
     }
 
+
     @Override
     public String toString() {
         StringBuilder board = new StringBuilder();

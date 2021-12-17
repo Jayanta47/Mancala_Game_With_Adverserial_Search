@@ -9,3 +9,8 @@ public class Heuristic2 implements IHeuristic{
         return (isP1)? val:-val;
     }
 }
+
+
+// heuristic 2 pitfalls
+//the number of beads on my row doesnt
+// have much effect on the overall performance of the heuristic

@@ -1,7 +1,5 @@
 package GameBoard;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 
 public class MancalaBoard {
@@ -62,6 +60,22 @@ public class MancalaBoard {
 
     public boolean isEndOfGame() {
         return this.currentState.isEndState();
+    }
+
+    public int getBeadsAt(int pos, boolean isP1) {
+        return this.currentState.getValOfBox(pos, isP1);
+    }
+
+    public int getP1Points() {
+        return this.currentState.getP1Score();
+    }
+
+    public int getP2Points() {
+        return this.currentState.getP2Score();
+    }
+
+    public boolean isCurrentFT() {
+        return this.currentState.allowFT;
     }
 
 //    @Override

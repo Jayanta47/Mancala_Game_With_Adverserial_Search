@@ -9,9 +9,9 @@ import java.util.Arrays;
 
 public class Player {
     IHeuristic hn;
-    int playerNo;
+    public int playerNo;
     MancalaBoard mb;
-    private final int MaxDepth = 15;
+    private final int MaxDepth = 10;
     int[] returnVal;
     boolean testMode=false;
     ArrayList<ArrayList<String>> record;
@@ -31,18 +31,19 @@ public class Player {
         this.testMode = true;
     }
 
-    public void makeMove() {
+    public int makeMove() {
         GameState s = mb.getStateCopy();
         int move = alpha_beta_search(s);
 //        mb.clickSquare(move);
         System.out.println("Move made by p: ");
         System.out.println(move);
         mb.clickSquare(move);
+        return move;
     }
 
     private int alpha_beta_search(GameState s) {
         for (int i=0;i<7;i++) {
-            this.returnVal[i]=0;
+            this.returnVal[i]=Integer.MIN_VALUE;
         }
 
         int resultV= MaxValue(s, Integer.MIN_VALUE, Integer.MAX_VALUE, MaxDepth, this.playerNo-1);
