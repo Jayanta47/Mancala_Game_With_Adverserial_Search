@@ -101,9 +101,10 @@ public class test {
         Player P2 = new Player(new Heuristic2(), 2, mb);
         P1.setMaxDepth(6);
         P2.setMaxDepth(14);
+//        P1.performMinimax();
 //        P2.performMinimax();
-        P1.turnOnIDS();
-        P2.turnOnIDS();
+//        P1.turnOnIDS();
+//        P2.turnOnIDS();
         while(!mb.isEndOfGame()) {
             if (mb.current_turn%2==0) {
                 P1.makeMove();
@@ -183,7 +184,7 @@ public class test {
 
                         if (i!=j) {
                             // uncomment this line during simulation
-//                            System.out.println("Game Played Among: H"+(i+1)+" vs H"+(j+1) + " Depth: "+depthP1[d] + " - "+depthP2[d]);
+                            System.out.println("Game Played Among: H"+(i+1)+" vs H"+(j+1) + " Depth: "+depthP1[d] + " - "+depthP2[d]);
                             MancalaBoard mb = new MancalaBoard();
                             Player P1 = new Player(heuristics.get(i), 1, mb);
                             Player P2 = new Player(heuristics.get(j), 2, mb);
@@ -263,7 +264,7 @@ public class test {
 
     public static void main(String[] args) {
 //        BoardCheck();
-//        AB_search_test();
+        AB_search_test();
 //        Player_test();
 //        singlePlayerTest();
 //        try {
@@ -272,11 +273,11 @@ public class test {
 //            e.printStackTrace();
 //        }
 
-        try {
-            collectData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            collectData();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
 
     }
