@@ -95,8 +95,9 @@ public class test {
     public static void AB_search_test() {
         MancalaBoard mb = new MancalaBoard();
         System.out.println(mb);
-        Player P1 = new Player(new Heuristic1(), 1, mb);
-        Player P2 = new Player(new Heuristic2(), 2, mb);
+        Player P1 = new Player(new Heuristic4(), 1, mb);
+        Player P2 = new Player(new Heuristic6(), 2, mb);
+//        P2.performMinimax();
 
         while(!mb.isEndOfGame()) {
             if (mb.current_turn%2==0) {
@@ -137,8 +138,8 @@ public class test {
 
     public static void main(String[] args) {
 //        BoardCheck();
-//        AB_search_test();
-        Player_test();
+        AB_search_test();
+//        Player_test();
 //        singlePlayerTest();
     }
 }

@@ -11,9 +11,11 @@ public class Player {
     IHeuristic hn;
     public int playerNo;
     MancalaBoard mb;
-    private final int MaxDepth = 10;
+    private int MaxDepth = 10;
     int[] returnVal;
     boolean testMode=false;
+    boolean performIDS=false;
+    boolean searchByAlphaBeta = true;
     ArrayList<ArrayList<String>> record;
 
     public Player(IHeuristic hn, int playerNo, MancalaBoard mb) {
@@ -27,17 +29,53 @@ public class Player {
         }
     }
 
+    public void resetAll() {
+        this.MaxDepth = 10;
+        testMode=false;
+        performIDS=false;
+        searchByAlphaBeta = true;
+        record.clear();
+    }
+
     public void turnOnTestMode() {
         this.testMode = true;
     }
 
+    public void turnOnIDS() {
+        this.performIDS = true;
+    }
+
+    public void turnOffIDS() {
+        this.performIDS = false;
+    }
+
+    public void performAlphaBeta() {
+        this.searchByAlphaBeta = true;
+    }
+
+    public void performMinimax() {
+        this.searchByAlphaBeta = false;
+    }
+
+    public void setMaxDepth(int depth) {
+        this.MaxDepth = depth;
+    }
+
     public int makeMove() {
         GameState s = mb.getStateCopy();
-        int move = alpha_beta_search(s);
+        int move = -1;
+        if (this.searchByAlphaBeta) {
+            move = alpha_beta_search(s);
+        }
+        else {
+            move = MiniMax(s);
+        }
+
 //        mb.clickSquare(move);
-        System.out.println("Move made by p: ");
-        System.out.println(move);
-        mb.clickSquare(move);
+//        System.out.println("Move made by p: ");
+//        System.out.println(move);
+        if (move!=-1) mb.clickSquare(move);
+        else System.out.println("Error Occurred");
         return move;
     }
 
@@ -47,8 +85,25 @@ public class Player {
         }
 
         int resultV= MaxValue(s, Integer.MIN_VALUE, Integer.MAX_VALUE, MaxDepth, this.playerNo-1);
-        if(testMode) System.out.println(Arrays.toString(this.returnVal));
         if (testMode) {
+            System.out.println(Arrays.toString(this.returnVal));
+            System.out.println("result="+resultV);
+        }
+        for(int i=6;i>=1;i--) {
+            if (this.returnVal[i]==resultV && s.getValOfBox(i, this.playerNo==1)>0) return i;
+        }
+
+        return -1;
+    }
+
+    private int alpha_beta_search_IDS(GameState s) {
+        for (int i=0;i<7;i++) {
+            this.returnVal[i]=Integer.MIN_VALUE;
+        }
+
+        int resultV= MaxValue(s, Integer.MIN_VALUE, Integer.MAX_VALUE, MaxDepth, this.playerNo-1);
+        if (testMode) {
+            System.out.println(Arrays.toString(this.returnVal));
             System.out.println("result="+resultV);
         }
         for(int i=6;i>=1;i--) {
@@ -148,6 +203,71 @@ public class Player {
             }
         }
         if (testMode) System.out.println("returning "+v);
+        return v;
+    }
+
+
+    private int MiniMax(GameState s) {
+        for (int i=0;i<7;i++) {
+            this.returnVal[i]=Integer.MIN_VALUE;
+        }
+
+        int resultV = Minimax_Max(s, MaxDepth, this.playerNo-1);
+        for(int i=6;i>=1;i--) {
+            if (this.returnVal[i]==resultV && s.getValOfBox(i, this.playerNo==1)>0) return i;
+        }
+        return -1;
+    }
+
+    private int Minimax_Max(GameState s, int depth, int turn_player) {
+        if (depth == 0 || s.isEndState()) {
+            return this.hn.calculateHeuristicVal(s, (turn_player==0));
+        }
+
+        int v = Integer.MIN_VALUE;
+
+        for (int i=6;i>=1;i--) {
+            if (s.getValOfBox(i, (turn_player==0)) > 0) {
+                GameState nxtState = s.nextState(i, (turn_player==0));
+                if (nxtState.isFreeTurn()){
+                    v=Math.max(v, Minimax_Max(nxtState, depth-1, turn_player));
+                }
+                else {
+
+                    v = Math.max(v, Minimax_Min(nxtState,depth-1, (turn_player+1)%2));
+                }
+
+                if (depth==MaxDepth) {
+                    returnVal[i] = v;
+                }
+
+            }
+            else if (depth==MaxDepth){
+                returnVal[i]=Integer.MIN_VALUE;
+            }
+        }
+        return v;
+    }
+
+    private int Minimax_Min(GameState s, int depth, int turn_player) {
+        if (depth == 0 || s.isEndState()) {
+            return this.hn.calculateHeuristicVal(s, (turn_player==0));
+        }
+
+        int v = Integer.MAX_VALUE;
+
+        for (int i=6;i>=1;i--) {
+            if (s.getValOfBox(i, (turn_player==0)) > 0) {
+                GameState nxtState = s.nextState(i, (turn_player==0));
+                if (nxtState.isFreeTurn()) {
+
+                    v = Math.min(v, Minimax_Min(nxtState, depth-1, turn_player));
+                }
+                else {
+                    v = Math.min(v, Minimax_Max(nxtState, depth-1, (turn_player+1)%2));
+                }
+            }
+        }
         return v;
     }
 }
