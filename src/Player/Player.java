@@ -6,6 +6,9 @@ import Heuristics.IHeuristic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+
+import static java.lang.System.exit;
 
 public class Player {
     IHeuristic hn;
@@ -16,7 +19,7 @@ public class Player {
     boolean testMode=false;
     boolean performIDS=false;
     boolean searchByAlphaBeta = true;
-    ArrayList<ArrayList<String>> record;
+    ArrayList<HashMap<Integer, Integer>> record;
 
     public Player(IHeuristic hn, int playerNo, MancalaBoard mb) {
         this.hn = hn;
@@ -24,9 +27,10 @@ public class Player {
         this.mb = mb;
         returnVal = new int[7];
         record = new ArrayList<>();
-        for(int i=0;i<MaxDepth;i++) {
-            record.add(new ArrayList<>());
-        }
+    }
+
+    public void setHeuristic(IHeuristic hn) {
+        this.hn = hn;
     }
 
     public void resetAll() {
@@ -65,17 +69,26 @@ public class Player {
         GameState s = mb.getStateCopy();
         int move = -1;
         if (this.searchByAlphaBeta) {
-            move = alpha_beta_search(s);
+            if (this.performIDS) {
+                move = alpha_beta_search_IDS(s);
+                if(move==-1) {
+                    System.out.println("ids wrong");
+                }
+            }
+            else {
+                move = alpha_beta_search(s);
+                if(move==-1) {
+                    System.out.println("alpha-beta wrong");
+                }
+            }
         }
         else {
             move = MiniMax(s);
         }
 
-//        mb.clickSquare(move);
-//        System.out.println("Move made by p: ");
-//        System.out.println(move);
+
         if (move!=-1) mb.clickSquare(move);
-        else System.out.println("Error Occurred");
+
         return move;
     }
 
@@ -97,15 +110,28 @@ public class Player {
     }
 
     private int alpha_beta_search_IDS(GameState s) {
-        for (int i=0;i<7;i++) {
-            this.returnVal[i]=Integer.MIN_VALUE;
+        record.clear();
+        int resultV = Integer.MIN_VALUE;
+
+        for(int i=0;i<this.MaxDepth;i++) {
+            record.add(i, new HashMap<>());
+            for(int j=1;j<=6;j++) {
+                record.get(i).put(j,1);
+            }
+
+        }
+        int searchLimit = this.MaxDepth;
+        for(int depthIDS = 5; depthIDS<=searchLimit;depthIDS++) {
+            this.MaxDepth = depthIDS;
+            for (int i=0;i<7;i++) {
+                this.returnVal[i]=Integer.MIN_VALUE;
+            }
+
+            // initiating the search
+            resultV = MaxValue(s, Integer.MIN_VALUE, Integer.MAX_VALUE, this.MaxDepth, this.playerNo-1);
+
         }
 
-        int resultV= MaxValue(s, Integer.MIN_VALUE, Integer.MAX_VALUE, MaxDepth, this.playerNo-1);
-        if (testMode) {
-            System.out.println(Arrays.toString(this.returnVal));
-            System.out.println("result="+resultV);
-        }
         for(int i=6;i>=1;i--) {
             if (this.returnVal[i]==resultV && s.getValOfBox(i, this.playerNo==1)>0) return i;
         }
@@ -117,33 +143,56 @@ public class Player {
 
     private int MaxValue(GameState s, int alpha, int beta, int depth, int turn_player) {
 
-//        if(testMode) {
-//            System.out.println("Entered Maxval");
-//        }
         if (depth == 0 || s.isEndState()) {
             return this.hn.calculateHeuristicVal(s, (turn_player==0));
         }
 
         int v = Integer.MIN_VALUE;
+        int bestIdx=-1;
 
-        for (int i=6;i>=1;i--) {
+
+        ArrayList<Integer> moveOrder;
+        if (this.performIDS) {
+            moveOrder = freqAnalysis(this.MaxDepth-depth);
+        }
+        else {
+            moveOrder = new ArrayList<>();
+            for(int i=6;i>=1;i--) {
+                moveOrder.add(i);
+            }
+        }
+
+        if (moveOrder.size()!=6) {
+            System.err.println("error in move ordering, exiting program");
+            exit(0);
+        }
+
+        for (int i:moveOrder) {
             if (s.getValOfBox(i, (turn_player==0)) > 0) {
                 GameState nxtState = s.nextState(i, (turn_player==0));
                 if (nxtState.isFreeTurn()){
                     if (testMode) {
                         System.out.printf("Entering Max Value Mode, depth %d -> %d, i = %d\n", depth,depth-1,  i);
                         System.out.println(nxtState);
-                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
+//                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
                     }
+                    int v_=v;
                     v=Math.max(v, MaxValue(nxtState, alpha, beta, depth-1, turn_player));
+                    if (v>v_) {
+                        bestIdx = i;
+                    }
                 }
                 else {
                     if (testMode) {
                         System.out.printf("Entering Min Value Mode, depth %d -> %d, i = %d\n", depth,depth-1,  i);
                         System.out.println(nxtState);
-                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
+//                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
                     }
+                    int v_=v;
                     v = Math.max(v, MinValue(nxtState, alpha, beta, depth-1, (turn_player+1)%2));
+                    if (v>v_) {
+                        bestIdx = i;
+                    }
                 }
 
                 if (depth==MaxDepth) {
@@ -151,6 +200,7 @@ public class Player {
                 }
                 if (v>=beta) {
                     if (depth==MaxDepth-1 && testMode) System.out.println("returning "+v);
+                    if (bestIdx!=-1 && this.performIDS)this.record.get(this.MaxDepth-depth).put(bestIdx, this.record.get(this.MaxDepth-depth).get(bestIdx)+1);
                     return v;
                 }
                 alpha = Math.max(alpha, v);
@@ -160,49 +210,97 @@ public class Player {
             }
         }
         if (depth==MaxDepth && testMode) System.out.println("returning "+v);
+        if (bestIdx!=-1 && this.performIDS)this.record.get(this.MaxDepth-depth).put(bestIdx, this.record.get(this.MaxDepth-depth).get(bestIdx)+1);
         return v;
     }
 
-    private int MinValue(GameState s, int alpha, int beta, int depth, int turn_player) {
+    private ArrayList<Integer> freqAnalysis(int depth) {
+        ArrayList<Integer> mo = new ArrayList<>();
+        HashMap<Integer, Integer> freq = this.record.get(depth);
+        int[] arr = new int[6];
+        for(int i=1;i<=6;i++) {
+            arr[i-1] = freq.get(i);
+        }
+        Arrays.sort(arr);
+        boolean[] taken = new boolean[6];
+        for(int i=0;i<6;i++) taken[i]=false;
 
-//        if(testMode) {
-//            System.out.println("Entered Minval");
-//        }
+        for(int arrIdx = 0;arrIdx<6;arrIdx++) {
+            for(int freqIdx = 6; freqIdx>=1;freqIdx--) {
+                if (freq.get(freqIdx)==arr[arrIdx] && !taken[freqIdx-1]) {
+                    mo.add(freqIdx);
+                    taken[freqIdx-1] = true;
+                }
+            }
+        }
+
+        return mo;
+
+    }
+
+    private int MinValue(GameState s, int alpha, int beta, int depth, int turn_player) {
 
         if (depth == 0 || s.isEndState()) {
             return this.hn.calculateHeuristicVal(s, (turn_player==0));
         }
 
         int v = Integer.MAX_VALUE;
+        int bestIdx=-1;
 
-        for (int i=6;i>=1;i--) {
+
+        ArrayList<Integer> moveOrder=null;
+        if (this.performIDS) {
+            moveOrder = freqAnalysis(depth);
+        }
+        else {
+            moveOrder = new ArrayList<>();
+            for(int i=6;i>=1;i--) {
+                moveOrder.add(i);
+            }
+        }
+
+        if (moveOrder.size()!=6) {
+            System.err.println("error in move ordering, exiting program");
+            exit(0);
+        }
+
+        for (int i : moveOrder) {
             if (s.getValOfBox(i, (turn_player==0)) > 0) {
                 GameState nxtState = s.nextState(i, (turn_player==0));
                 if (nxtState.isFreeTurn()) {
                     if (testMode) {
                         System.out.printf("Entering min value mode, depth %d -> %d, i= %d\n", depth,depth-1, i);
                         System.out.println(nxtState);
-                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
+//                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
                     }
+                    int v_ = v;
                     v = Math.min(v, MinValue(nxtState, alpha, beta, depth-1, turn_player));
+                    if (v_>v) {
+                        bestIdx=i;
+                    }
                 }
                 else {
                     if (testMode) {
                         System.out.printf("Entering max Value Mode, depth %d -> %d, i = %d\n", depth,depth-1, i);
                         System.out.println(nxtState);
-                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
+//                        record.get(depth-1).add("i="+i+" turn="+turn_player+"\n"+ nxtState);
                     }
-
+                    int v_ = v;
                     v = Math.min(v, MaxValue(nxtState, alpha, beta, depth-1, (turn_player+1)%2));
+                    if (v_>v) {
+                        bestIdx=i;
+                    }
                 }
                 if (v<=alpha) {
                     if (testMode) System.out.println("returning "+v);
+                    if (bestIdx!=-1 && this.performIDS)this.record.get(this.MaxDepth-depth).put(bestIdx, this.record.get(this.MaxDepth-depth).get(bestIdx)+1);
                     return v;
                 }
                 beta = Math.min(beta, v);
             }
         }
         if (testMode) System.out.println("returning "+v);
+        if (bestIdx!=-1 && this.performIDS)this.record.get(this.MaxDepth-depth).put(bestIdx, this.record.get(this.MaxDepth-depth).get(bestIdx)+1);
         return v;
     }
 

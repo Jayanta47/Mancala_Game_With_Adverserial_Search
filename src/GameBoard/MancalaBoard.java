@@ -78,48 +78,6 @@ public class MancalaBoard {
         return this.currentState.allowFT;
     }
 
-//    @Override
-//    public String toString() {
-//        StringBuilder board = new StringBuilder();
-////        board.append("Current Turn: ");
-////        if ((this.current_turn+1)%2==0) board.append("P1").append("\n");
-////        else board.append("P2").append("\n");
-//        board.append("Mancala Board: \n");
-//        board.append("P2: ").append(this.boardSpaces[this.player_2_box]).append("\n");
-//        board.append("-------------------------------------\n");
-//        board.append("|\t|\t");
-//
-//        for (int i = 12; i > 6; i--) {
-//            board.append(this.boardSpaces[i]);
-//            if (i > 7) board.append(" | ");
-//            else board.append(" ");
-//        }
-//
-//
-//        board.append("\t|\t|");
-//
-//        board.append("\n");
-//
-//        board.append("| ").append("P2").append("|\t");
-//        board.append("----".repeat(5));
-//        board.append("\t| ").append("P1").append("|");
-//
-//        board.append("\n");
-//
-//        board.append("|\t|\t");
-//        for (int i = 0; i < 6; i++) {
-//            board.append(this.boardSpaces[i]);
-//            if (i < 5) board.append(" | ");
-//            else board.append(" ");
-//        }
-//        board.append("\t|\t|\n");
-//        board.append("-------------------------------------\n");
-//        board.append("\t\t\t\t\t\t\tP1: ").append(this.boardSpaces[this.player_1_box]);
-//        board.append("\n\n");
-//
-//        return board.toString();
-//    }
-
 
 }
 
